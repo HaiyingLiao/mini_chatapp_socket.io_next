@@ -3,9 +3,9 @@
 import io from 'socket.io-client';
 import { useState, useEffect } from 'react';
 
-let socket;
+const socket = io();
 
-type Message = {
+type MessageType = {
 	author: string;
 	message: string;
 };
@@ -14,37 +14,28 @@ export default function Home() {
 	const [username, setUsername] = useState('');
 	const [chosenUsername, setChosenUsername] = useState('');
 	const [message, setMessage] = useState('');
-	const [messages, setMessages] = useState<Array<Message>>([]);
+	const [messages, setMessages] = useState<Array<MessageType>>([]);
 
 	useEffect(() => {
-		console.log('I am here');
-		socketInitializer();
+		const handleMessage = (msg: MessageType) => {
+			console.log('I am useEffect');
+			setMessages((prevMsgs) => {
+				return [...prevMsgs, { author: msg.author, message: msg.message }];
+			});
+		};
+		socket.on('chat message', handleMessage);
+
+		return () => {
+			socket.off('chat message', handleMessage);
+		};
 	}, []);
 
-	const socketInitializer = async () => {
-		if (socket) {
-			console.log('Socket already initialized');
-			return;
-		}
-		// We just call it because we don't need anything else out of it
-		await fetch('/api/socket');
-
-		socket = io();
-
-		socket.on('newIncomingMessage', (msg) => {
-			setMessages((currentMsg) => [
-				...currentMsg,
-				{ author: msg.author, message: msg.message },
-			]);
-		});
-	};
-
 	const sendMessage = async () => {
-		socket.emit('createdMessage', { author: chosenUsername, message });
+		socket.emit('chat message', { author: chosenUsername, message });
 		setMessage('');
 	};
 
-	const handleKeypress = (e) => {
+	const handleKeypress = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		//it triggers by pressing the enter key
 		if (e.keyCode === 13) {
 			if (message) {
