@@ -75,7 +75,7 @@ export default function Home() {
 									key={i}
 								>
 									<div className='bg-white w-fit rounded py-1 px-2 '>
-										<span className='font-bold'>{msg.author} :</span>
+										<span className='font-bold'>{msg.author}: </span>
 										{msg.message}
 									</div>
 								</li>
